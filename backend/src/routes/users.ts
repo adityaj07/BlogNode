@@ -3,10 +3,13 @@ import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { sign } from "hono/jwt";
 import { validator } from "hono/validator";
-import { z } from "zod";
 import { setCookie } from "hono/cookie";
-import { statusCode } from "../../../common/types/statusCode";
-import {  sha256 } from "hono/utils/crypto";
+import { sha256 } from "hono/utils/crypto";
+import { statusCode } from "@adityaj07/blognode-common/dist/types/statusCode";
+import {
+  signupBody,
+  loginBody,
+} from "@adityaj07/blognode-common/dist/types/userZodSchema";
 
 const app = new Hono<{
   Bindings: {
@@ -16,22 +19,22 @@ const app = new Hono<{
   };
 }>();
 
-const signupBody = z.object({
-  email: z.string().email("Invalid email address"),
-  name: z.string().optional(),
-  password: z
-    .string()
-    .min(4, "Password must have a minimum length of 4.")
-    .max(6, "Password cannot be of greater than 6 characters."),
-});
+// const signupBody = z.object({
+//   email: z.string().email("Invalid email address"),
+//   name: z.string().optional(),
+//   password: z
+//     .string()
+//     .min(4, "Password must have a minimum length of 4.")
+//     .max(6, "Password cannot be of greater than 6 characters."),
+// });
 
-export const loginBody = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z
-    .string()
-    .min(4, "Password must have a minimum length of 4.")
-    .max(6, "Password cannot be of greater than 6 characters."),
-});
+// export const loginBody = z.object({
+//   email: z.string().email("Invalid email address"),
+//   password: z
+//     .string()
+//     .min(4, "Password must have a minimum length of 4.")
+//     .max(6, "Password cannot be of greater than 6 characters."),
+// });
 
 app.post(
   "/signup",
@@ -68,7 +71,7 @@ app.post(
         });
       }
 
-      // hashing the password  
+      // hashing the password
       const hashedPassword = await sha256(password);
 
       const user = await prisma.user.create({
